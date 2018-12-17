@@ -27,6 +27,16 @@ use RedBeanPHP\RedException\SQL as SQLException;
 abstract class AQueryWriter
 {
 	/**
+	 * Common SQL template for a shared list in findMulti
+	 */
+	const TPL_SHAREDLIST = '
+		SELECT %1$s.*, %2$s.*, %3$s.*
+		FROM %1$s
+		LEFT JOIN %2$s ON %2$s.%1$s_id = %1$s.id
+		LEFT JOIN %3$s ON %2$s.%3$s_id = %3$s.id
+	';
+
+	/**
 	 * Constant: Select Snippet 'FOR UPDATE'
 	 */
 	const C_SELECT_SNIPPET_FOR_UPDATE = 'FOR UPDATE';

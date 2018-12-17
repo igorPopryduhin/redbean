@@ -10,6 +10,7 @@ use RedBeanPHP\OODBBean as OODBBean;
 use RedBeanPHP\RedException as RedException;
 use RedBeanPHP\RedException\SQL as SQL;
 use RedBeanPHP\Finder;
+use RedBeanPHP\QueryWriter\AQueryWriter;
 
 /**
  * Finding
@@ -168,6 +169,41 @@ class Finding extends Base {
 		asrt( $candle->name, 'candle' );
 		$price = reset( $candle->ownPrice );
 		asrt( (int) $price->tag, 5 );
+	}
+
+	/**
+	 * Usage:
+	 *
+	 * $types = 'customer,billingcustomer_customer,billingcustomer';
+	 * $query = vsprintf( AQueryWriter::TPL_SHAREDLIST, explode( ',', $types ) );
+	 * $results = R::findMulti($types, $query, array(), array(Finder::nmMap('customer','billingcustomer')));
+	 *
+	 */
+	public function testFindMultiShared() {
+		R::nuke();
+		$customer = R::dispense('customer');
+		$customer2 = R::dispense('customer');
+		$billingCustomer = R::dispense('billingcustomer');
+		$billingCustomer->payment = 610;
+		$customer->sharedBillingCustomer[] = $billingCustomer;
+		R::store( $customer );
+		R::store( $customer2 );
+		$types = 'customer,billingcustomer_customer,billingcustomer';
+		$query = vsprintf( AQueryWriter::TPL_SHAREDLIST, explode( ',', $types ) );
+		$results = R::findMulti($types, $query, array(), array(Finder::nmMap('customer','billingcustomer')));
+		R::resetQueryCount();
+		R::startLogging();
+		asrt( isset( $results['customer'] ), true );
+		foreach( $results['customer'] as $customer ) {
+			$bills = $customer->sharedBillingcustomer;
+			if (count($bills)) {
+				$bill = reset($bills);
+				$amount = $bill->payment;
+			}
+		}
+		asrt( intval($amount), 610 );
+		R::stopLogging();
+		asrt( R::getQueryCount(), 0 );
 	}
 
 	/**

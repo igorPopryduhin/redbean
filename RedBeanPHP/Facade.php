@@ -1098,6 +1098,18 @@ class Facade
 	{
 		return self::query( 'getRow', $sql, $bindings );
 	}
+	
+	
+	/**
+     	* @param $sql
+     	* @param array $bindings
+     	* @return array
+     	* @throws SQLException
+     	*/
+	public static function getOne($sql, $bindings = array())
+    	{
+        	return self::query( 'getCol', $sql, $bindings )[0];
+    	}
 
 	/**
 	 * Convenience function to fire an SQL query using the RedBeanPHP
